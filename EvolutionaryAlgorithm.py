@@ -15,8 +15,8 @@ from evoalgfunc import (
 )
 
 class EvolutionaryAlgorithm:
-    def __init__(self, B, population_size, generations, crossover_prob, mutation_prob, elitism_type="strict", elite_count=2, fraction_random=0.3, selection="tournament", seed=None, logs=False):
-        self.B = B  # Bipartite graph object
+    def __init__(self, G, population_size, generations, crossover_prob, mutation_prob, elitism_type="strict", elite_count=2, fraction_random=0.3, selection="tournament", seed=None, logs=False):
+        self.G = G  # Bipartite graph object
         self.population_size = population_size
         self.generations = generations
         self.crossover_prob = crossover_prob
@@ -32,12 +32,12 @@ class EvolutionaryAlgorithm:
             random.seed(seed)
 
         # Initialize population
-        self.side1 = [n for n, d in B.nodes(data=True) if d['bipartite'] == 0]
-        self.side2 = [n for n, d in B.nodes(data=True) if d['bipartite'] == 1]
+        self.side1 = [n for n, d in G.nodes(data=True) if d['bipartite'] == 0]
+        self.side2 = [n for n, d in G.nodes(data=True) if d['bipartite'] == 1]
         self.population = [create_genotype(self.side1, self.side2) for _ in range(self.population_size)]
         
         # Initialize best solution from the initial population
-        scores = [fitness(ind, self.B) for ind in self.population]
+        scores = [fitness(ind, self.G) for ind in self.population]
         best_index = scores.index(min(scores))
         self.best_solution = self.population[best_index]
         self.best_score = scores[best_index]
@@ -50,7 +50,7 @@ class EvolutionaryAlgorithm:
         for gen in range(self.generations):
             if self.logs:
                 print(f"\nGeneration {gen + 1}:")
-            scores = [fitness(ind, self.B) for ind in self.population]
+            scores = [fitness(ind, self.G) for ind in self.population]
             next_population = []
 
             # Apply elitism if enabled
@@ -115,7 +115,7 @@ class EvolutionaryAlgorithm:
             self.population = next_population
 
             # Update best solution from the next_population
-            scores = [fitness(ind, self.B) for ind in self.population]
+            scores = [fitness(ind, self.G) for ind in self.population]
             current_best_index = scores.index(min(scores))
             if scores[current_best_index] < self.best_score:
                 self.best_score = scores[current_best_index]
@@ -128,7 +128,7 @@ class EvolutionaryAlgorithm:
             # Display population if logs are enabled
             if self.logs:
                 for i, individual in enumerate(self.population):
-                    print(f"  Individual {i+1}: {individual} with score: {fitness(individual, self.B)}")
+                    print(f"  Individual {i+1}: {individual} with score: {fitness(individual, self.G)}")
 
         if not self.logs:
             print(f"Final Generation Best Score = {self.best_score}")
