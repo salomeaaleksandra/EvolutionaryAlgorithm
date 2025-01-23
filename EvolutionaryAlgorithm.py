@@ -94,6 +94,9 @@ class EvolutionaryAlgorithm:
             elif self.selection == "tournament":
                 # Tournament selection for remaining population
                 while len(next_population) < self.population_size:
+                    if len(non_elites) < 2:
+                        raise ValueError("Not enough non-elite individuals to perform tournament selection.")
+
                     parent1 = tournament_selection(non_elites, non_elite_scores, logs=self.logs)
                     parent2 = tournament_selection(non_elites, non_elite_scores, logs=self.logs)
                     if not isinstance(parent1, list) or not isinstance(parent2, list):

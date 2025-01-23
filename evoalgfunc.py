@@ -61,7 +61,7 @@ def plot_bipartite_graph(B, solution=None):
     
     plt.title("Bipartite Weighted Graph")
     plt.axis("off")
-    plt.show()
+    # plt.show()
     
 def create_genotype(side1, side2):
     side2_shuffled = side2.copy()
@@ -127,6 +127,9 @@ def tournament_selection(population, scores, logs=False):
     Returns:
         list: The selected individual from the tournament (winner) for the next generation.
     """
+    if len(population) < 2:
+        raise ValueError("Population size is less than 2. Cannot perform tournament selection.")
+
     individual1, individual2 = random.sample(population, 2)
     score1 = scores[population.index(individual1)]
     score2 = scores[population.index(individual2)]
