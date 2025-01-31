@@ -80,39 +80,62 @@ def fitness(genotype, B):
             total_weight += B.edges[u, v]['weight']
     return total_weight + (penalty * 1e9)
 
-def roulette_selection(population, scores, logs=False):
+def roulette_selection(population, scores, scaling='inverse', logs=False):
     """
-    Perform roulette wheel selection on the entire population.
-
+    Perform roulette selection based on fitness scores.
+    
     Parameters:
-        population (list): The current population.
-        scores (list): Fitness scores of the population.
-        logs (bool): Whether to print out the roulette results.
-
+        population (list): The list of individuals.
+        scores (list): The fitness scores of the population.
+        scaling (str): The scaling method to use ('inverse' or 'proportional').
+        logs (bool): Whether to log debug information.
+        
     Returns:
-        list: The selected population for the next generation.
+        list: A new population selected using roulette selection.
     """
-    fitness_values = [1 / (s + 1e-9) for s in scores]  # Minimize by inverting scores
-    total_fitness = sum(fitness_values)
-    probabilities = [fv / total_fitness for fv in fitness_values]
+    if scaling not in {'inverse', 'proportional'}:
+        raise ValueError("Unsupported scaling method. Use 'inverse' or 'proportional'.")
+    
+    if scaling == 'inverse':
+        # Inverse scaling for minimization
+        total_fitness = sum(1 / score for score in scores if score > 0)
+        probabilities = [(1 / score) / total_fitness for score in scores]
+    
+    elif scaling == 'proportional':
+        # Proportional scaling (Fitness Difference)
+        max_fitness = max(scores)
+        min_fitness = min(scores)
+        if max_fitness == min_fitness:
+            # If all fitness values are the same, assign equal probabilities
+            probabilities = [1 / len(scores)] * len(scores)
+        else:
+            fitness_diff = [max_fitness - score for score in scores]
+            total_diff = sum(fitness_diff)
+            probabilities = [diff / total_diff for diff in fitness_diff]
 
+    
+    # Cumulative probabilities for the roulette wheel
     cumulative_probabilities = []
     cumulative = 0
-    for p in probabilities:
-        cumulative += p
+    for prob in probabilities:
+        cumulative += prob
         cumulative_probabilities.append(cumulative)
-
-    # Select individuals based on roulette probabilities
+    
+    # Perform selection
     selected_population = []
     for _ in range(len(population)):
-        rand = random.random()
+        r = random.random()  # Random number between 0 and 1
         for i, cp in enumerate(cumulative_probabilities):
-            if rand <= cp:
+            if r <= cp:
                 selected_population.append(population[i])
-                if logs:
-                    print(f"  Roulette selected: {population[i]} with probability {probabilities[i]:.4f}")
                 break
-
+    
+    if logs:
+        print(f"Scaling Method: {scaling}")
+        print(f"Scores: {scores}")
+        print(f"Probabilities: {probabilities}")
+        print(f"Cumulative Probabilities: {cumulative_probabilities}")
+    
     return selected_population
 
 def tournament_selection(population, scores, logs=False):

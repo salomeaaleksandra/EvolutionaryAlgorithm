@@ -15,7 +15,7 @@ from evoalgfunc import (
 )
 
 class EvolutionaryAlgorithm:
-    def __init__(self, G, population_size, generations, crossover_prob, mutation_prob, elitism_type="strict", elite_count=2, fraction_random=0.3, selection="tournament", seed=None, logs=False):
+    def __init__(self, G, population_size, generations, crossover_prob, mutation_prob, elitism_type="strict", elite_count=2, fraction_random=0.3, selection="tournament", scaling=None, seed=None, logs=False):
         self.G = G  # Bipartite graph object
         self.population_size = population_size
         self.generations = generations
@@ -25,6 +25,7 @@ class EvolutionaryAlgorithm:
         self.elite_count = elite_count
         self.fraction_random = fraction_random
         self.selection = selection
+        self.scaling = scaling if selection == "roulette" else None  # Ensure scaling is only used when needed
         self.seed = seed
         self.logs = logs
 
@@ -82,7 +83,7 @@ class EvolutionaryAlgorithm:
                         next_population.extend([child1, child2])
             elif self.selection == "roulette":
                 # Roulette selection for remaining population
-                non_elites = roulette_selection(non_elites, non_elite_scores, logs=self.logs)
+                non_elites = roulette_selection(non_elites, non_elite_scores, scaling=self.scaling, logs=self.logs)
                 while len(next_population) < self.population_size:
                     parent1 = random.choice(non_elites)
                     parent2 = random.choice(non_elites)
